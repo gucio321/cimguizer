@@ -32,12 +32,12 @@ func main() {
 
 	// write funcs
 	if len(*funcsOutputPath) > 0 {
-		funcs, err := c.Functions()
+		funcs, err := c.Funcs()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = os.WriteFile(*funcsOutputPath, funcs, 0644)
+		err = os.WriteFile(*funcsOutputPath, []byte(funcs), 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -52,7 +52,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		err = os.WriteFile(*samOutputPath, sam, 0644)
+		err = os.WriteFile(*samOutputPath, []byte(sam), 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
