@@ -2,6 +2,7 @@ package cimguizer
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -25,12 +26,15 @@ type ArgT struct {
 
 type StructAndEnums struct {
 	Structs map[string]Struct `json:"structs"`
-	Enums   map[string]Enum   `json:"enums"`
+	Enums   map[string][]Enum `json:"enums"`
 }
 
 type Struct struct{}
 
-type Enum struct{}
+type Enum struct {
+	Name  string `json:"name"`
+	Value string `json:"calc_value"`
+}
 
 func Parse(data []byte) (*Cimguizer, error) {
 	lines := strings.Split(string(data), "\n")
@@ -96,12 +100,36 @@ func (c *Cimguizer) StructAndEnums() (string, error) {
 	result.Structs = make(map[string]Struct)
 
 	// 2.0 enums
-	result.Enums = make(map[string]Enum)
+	result.Enums = make(map[string][]Enum)
 
 	for i, line := range c.Lines {
-		if strings.HasPrefix(line, "typedef enum") {
+		if !strings.HasPrefix(line, "typedef enum") {
 			continue
 		}
+
+		data := line
+		// the typedef should be foolowed by {
+		for n := i + 1; !strings.Contains(data, ";"); n++ {
+			data += c.Lines[n]
+		}
+
+		// remove duplicated spaces
+		data = strings.Join(strings.Fields(data), " ")
+
+		// remove everything from ; to the end of the line
+		data = strings.Split(data, ";")[0]
+		data = strings.TrimPrefix(data, "typedef enum {")
+		data = strings.TrimPrefix(data, " ")
+		data = strings.ReplaceAll(data, " ", "")
+		name := strings.Split(data, "}")[1]
+		values := strings.Split(strings.Split(data, "}")[0], ",")
+
+		enums := make([]Enum, 0)
+		for i, value := range values {
+			enums = append(enums, Enum{Name: value, Value: fmt.Sprintf("%d", i)})
+		}
+
+		result.Enums[name] = enums
 	}
 
 	resultStr, err := json.MarshalIndent(result, "\t", " ")

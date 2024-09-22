@@ -28,6 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// fmt.Println(c)
-	fmt.Println(c.StructAndEnums())
+	sam, _ := (c.StructAndEnums())
+	fmt.Println("----")
+	fmt.Println(sam)
 }
